@@ -1,0 +1,135 @@
+---
+
+# Configure NFS server on the storage VM
+- name: Configure NFS server on the storage VM
+  hosts: storage
+  become: true
+  tasks:
+    - name: Ensure the 200GB disk exists
+      ansible.builtin.command:
+        cmd: lsblk
+      register: disk_check
+
+    - name: Abort if 200GB disk is not found
+      ansible.builtin.fail:
+        msg: "200GB disk (/dev/vdb) not found on the storage VM."
+      when: "'vdb' not in disk_check.stdout"
+
+    - name: Create partition on the 200GB disk
+      ansible.builtin.command:
+        cmd: parted /dev/vdb --script mklabel gpt mkpart primary ext4 0% 100%
+      args:
+        creates: /dev/vdb1
+
+    - name: Format the 200GB partition
+      ansible.builtin.filesystem:
+        fstype: ext4
+        dev: /dev/vdb1
+
+    - name: Ensure shared directory exists
+      ansible.builtin.file:
+        path: /mnt/shared_data
+        state: directory
+        mode: '0755'
+
+    - name: Mount the partition to shared directory
+      ansible.builtin.mount:
+        path: /mnt/shared_data
+        src: /dev/vdb1
+        fstype: ext4
+        state: mounted
+
+    - name: Ensure NFS utilities are installed
+      ansible.builtin.yum:
+        name: nfs-utils
+        state: present
+
+    - name: Install firewall Python library
+      ansible.builtin.yum:
+        name: python3-firewall
+        state: present
+
+    - name: Ensure firewalld is installed
+      ansible.builtin.yum:
+        name: firewalld
+        state: present
+
+    - name: Start and enable firewalld
+      ansible.builtin.service:
+        name: firewalld
+        state: started
+        enabled: true
+
+    - name: Configure NFS exports
+      ansible.builtin.copy:
+        dest: /etc/exports
+        content: |
+          /mnt/shared_data *(rw,sync,no_root_squash,no_subtree_check)
+
+    - name: Restart and enable NFS server and dependencies
+      ansible.builtin.service:
+        name: rpcbind
+        state: restarted
+        enabled: true
+
+    - name: Restart and enable NFS server
+      ansible.builtin.service:
+        name: nfs-server
+        state: restarted
+        enabled: true
+
+    - name: Open NFS-related ports in the firewall
+      ansible.builtin.firewalld:
+        service: "{{ item }}"
+        permanent: true
+        state: enabled
+      loop:
+        - nfs
+        - mountd
+        - rpc-bind
+
+    - name: Reload firewall
+      ansible.builtin.command:
+        cmd: firewall-cmd --reload
+
+# Mount shared storage on all VMs
+- name: Mount shared directory on all VMs
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure NFS utilities are installed
+      ansible.builtin.yum:
+        name: nfs-utils
+        state: present
+
+    - name: Test NFS server connectivity
+      ansible.builtin.shell:
+        cmd: "showmount -e {{ groups['storage'][0] }}"
+      register: nfs_test
+      failed_when: nfs_test.rc != 0
+      changed_when: false
+
+    - name: Fail if no exports are found
+      ansible.builtin.fail:
+        msg: "NFS server {{ groups['storage'][0] }} has no exports or is unreachable."
+      when: "'/mnt/shared_data' not in nfs_test.stdout"
+
+    - name: Ensure mount point exists
+      ansible.builtin.file:
+        path: /mnt/storage
+        state: directory
+        mode: '0755'
+
+    - name: Add NFS mount to /etc/fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: "{{ groups['storage'][0] }}:/mnt/shared_data /mnt/storage nfs defaults 0 0"
+        state: present
+
+    - name: Mount the shared directory
+      ansible.builtin.mount:
+        path: /mnt/storage
+        src: "{{ groups['storage'][0] }}:/mnt/shared_data"
+        fstype: nfs
+        state: mounted
+

@@ -1,0 +1,32 @@
+- name: Manage SSH Keys for VMs
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Remove old host keys from known_hosts
+      ansible.builtin.shell: ssh-keygen -R {{ item }}
+      with_items: "{{ groups['all'] }}"
+      delegate_to: localhost
+      ignore_errors: yes
+
+    - name: Add new host keys to known_hosts
+      ansible.builtin.shell: ssh-keyscan -H {{ item }} >> ~/.ssh/known_hosts
+      with_items: "{{ groups['all'] }}"
+      delegate_to: localhost
+      ignore_errors: yes
+
+- name: Configure SSH on remote VMs
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure .ssh directory exists
+      ansible.builtin.file:
+        path: ~/.ssh
+        state: directory
+        mode: '0700'
+
+    - name: Add public key to authorized_keys
+      ansible.builtin.copy:
+        src: ~/.ssh/id_ed25519.pub
+        dest: ~/.ssh/authorized_keys
+        mode: '0600'
+

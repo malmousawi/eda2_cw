@@ -1,0 +1,67 @@
+---
+- name: Set up NFS and download datasets
+  hosts: storage
+  become: true
+  tasks:
+    # Configure NFS export
+    - name: Ensure NFS exports file contains the correct entry
+      ansible.builtin.lineinfile:
+        path: /etc/exports
+        line: "/mnt/shared_data *(rw,sync,no_root_squash,no_subtree_check)"
+        state: present
+
+    - name: Reload NFS exports
+      ansible.builtin.command:
+        cmd: exportfs -ra
+
+    # Ensure permissions for the shared directory
+    - name: Ensure shared directory permissions
+      ansible.builtin.file:
+        path: /mnt/shared_data
+        state: directory
+        mode: '0777'
+
+    # Create subdirectories for datasets
+    - name: Ensure dataset directories exist
+      ansible.builtin.file:
+        path: /mnt/shared_data/{{ item.directory }}
+        state: directory
+        mode: '0777'
+      loop:
+        - { directory: "alphafold_human" }
+        - { directory: "alphafold_ecoli" }
+        - { directory: "cath_foldclassdb" }
+
+    # Download datasets
+    - name: Download datasets
+      ansible.builtin.get_url:
+        url: "{{ item.url }}"
+        dest: /mnt/shared_data/{{ item.filename }}
+        mode: '0644'
+      loop:
+        - { filename: "UP000005640_9606_HUMAN_v4.tar", url: "https://ftp.ebi.ac.uk/pub/databases/alphafold/latest/UP000005640_9606_HUMAN_v4.tar" }
+        - { filename: "UP000000625_83333_ECOLI_v4.tar", url: "https://ftp.ebi.ac.uk/pub/databases/alphafold/latest/UP000000625_83333_ECOLI_v4.tar" }
+        - { filename: "cath_foldclassdb.tar.gz", url: "http://bioinfadmin.cs.ucl.ac.uk/downloads/merizo_search/cath_foldclassdb.tar.gz" }
+    
+
+    # Extract datasets
+    - name: Extract Human AlphaFoldDB models
+      ansible.builtin.command:
+        cmd: "tar --skip-old-files -xvf /mnt/shared_data/UP000005640_9606_HUMAN_v4.tar -C /mnt/shared_data/alphafold_human"
+      args:
+        chdir: /mnt/shared_data
+      ignore_errors: true
+
+    - name: Extract E.coli AlphaFoldDB models
+      ansible.builtin.command:
+        cmd: "tar --skip-old-files -xvf /mnt/shared_data/UP000000625_83333_ECOLI_v4.tar -C /mnt/shared_data/alphafold_ecoli"
+      args:
+        chdir: /mnt/shared_data
+      ignore_errors: true
+
+    - name: Extract CATH Foldclass DB
+      ansible.builtin.command:
+        cmd: "tar --skip-old-files -xvf /mnt/shared_data/cath_foldclassdb.tar.gz -C /mnt/shared_data/cath_foldclassdb"
+      args:
+        chdir: /mnt/shared_data
+      ignore_errors: true

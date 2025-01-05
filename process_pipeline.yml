@@ -1,0 +1,157 @@
+---
+- name: Automate Redis queue setup and pipeline execution
+  hosts: host
+  tasks:
+    - name: Ensure Python3 is installed
+      ansible.builtin.yum:
+        name: python3
+        state: present
+      become: yes
+
+    - name: Ensure pip3 is installed
+      ansible.builtin.yum:
+        name: python3-pip
+        state: present
+      become: yes
+
+    - name: Ensure pip3 is available globally
+      ansible.builtin.shell: |
+        ln -sf /usr/bin/pip3 /usr/bin/pip
+      args:
+        creates: /usr/bin/pip
+      become: yes
+
+    - name: Ensure Redis is installed
+      ansible.builtin.yum:
+        name: redis
+        state: present
+      become: yes
+
+    - name: Configure Redis to allow external connections
+      ansible.builtin.lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: '^bind .*'
+        line: 'bind 0.0.0.0'
+        backup: yes
+      become: yes
+
+    - name: Start and enable Redis service
+      ansible.builtin.service:
+        name: redis
+        state: started
+        enabled: yes
+      become: yes
+
+    - name: Prepare storage directories with permissions
+      block:
+        - name: Create necessary directories with permissions
+          ansible.builtin.file:
+            path: "{{ item }}"
+            state: directory
+            mode: '0775'
+            owner: almalinux
+            group: almalinux
+          loop:
+            - /mnt/storage/decompressed_files
+            - /mnt/storage/decompressed_files/decompressed_human
+            - /mnt/storage/decompressed_files/decompressed_ecoli
+            - /mnt/storage/pipeline_results
+
+        - name: Set permissions recursively on pipeline_results
+          ansible.builtin.command:
+            cmd: chmod -R 0775 /mnt/storage/pipeline_results
+          become: yes
+
+        - name: Ensure workers can write to pipeline_results
+          ansible.builtin.command:
+            cmd: chown -R almalinux:almalinux /mnt/storage/pipeline_results
+          become: yes
+
+    - name: Copy Redis queue script to the host VM
+      ansible.builtin.copy:
+        src: /home/almalinux/ds4eng-infra/cnc-environment/redis_host.py
+        dest: /home/almalinux/redis_host.py
+        owner: almalinux
+        group: almalinux
+        mode: '0755'
+
+    - name: Copy decompress script to the host VM
+      ansible.builtin.copy:
+        src: /home/almalinux/ds4eng-infra/cnc-environment/decompress_files.py
+        dest: /home/almalinux/decompress_files.py
+        owner: almalinux
+        group: almalinux
+        mode: '0755'
+
+    - name: Run the Redis queue script
+      ansible.builtin.shell: |
+        pip install redis
+        python3 /home/almalinux/decompress_files.py
+        python3 /home/almalinux/redis_host.py
+      environment:
+        REDIS_HOST: "{{ inventory_hostname }}"
+      args:
+        chdir: /home/almalinux
+
+- name: Run pipeline on worker VMs
+  hosts: worker
+  tasks:
+    - name: Ensure Python3 is installed
+      ansible.builtin.yum:
+        name: python3
+        state: present
+      become: yes
+
+    - name: Ensure pip3 is installed
+      ansible.builtin.yum:
+        name: python3-pip
+        state: present
+      become: yes
+
+    - name: Ensure pip3 is available globally
+      ansible.builtin.shell: |
+        ln -sf /usr/bin/pip3 /usr/bin/pip
+      args:
+        creates: /usr/bin/pip
+      become: yes
+
+    - name: Ensure Python Redis module is installed in virtual environment
+      ansible.builtin.shell: |
+        source /home/almalinux/merizo_search/applications/merizosearch_env/bin/activate
+        pip install redis
+      args:
+        chdir: /home/almalinux
+
+    - name: Copy pipeline script to workers
+      ansible.builtin.copy:
+        src: /home/almalinux/ds4eng-infra/cnc-environment/pipeline_script.py
+        dest: /home/almalinux/pipeline_script.py
+        owner: almalinux
+        group: almalinux
+        mode: '0755'
+
+    - name: Copy results parser script to workers
+      ansible.builtin.copy:
+        src: /home/almalinux/ds4eng-infra/cnc-environment/results_parser.py
+        dest: /home/almalinux/results_parser.py
+        owner: almalinux
+        group: almalinux
+        mode: '0755'
+
+    - name: Copy redis worker script to workers
+      ansible.builtin.copy:
+        src: /home/almalinux/ds4eng-infra/cnc-environment/redis_worker.py
+        dest: /home/almalinux/redis_worker.py
+        owner: almalinux
+        group: almalinux
+        mode: '0755'
+
+    - name: Activate virtual environment and run the pipeline
+      ansible.builtin.shell: |
+        source /home/almalinux/merizo_search/applications/merizosearch_env/bin/activate
+        export REDIS_HOST={{ hostvars[groups['host'][0]].inventory_hostname }}
+        chmod +x /home/almalinux/pipeline_script.py
+        python3 /home/almalinux/pipeline_script.py
+      args:
+        chdir: /home/almalinux
+

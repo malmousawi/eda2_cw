@@ -1,0 +1,19 @@
+---
+- name: Create CATH Summary CSVs
+  hosts: storage
+  become: true
+  tasks:
+    - name: Ensure Python is installed
+      ansible.builtin.package:
+        name: python3
+        state: present
+
+    - name: Deploy processing script
+      ansible.builtin.copy:
+        src: /home/almalinux/ds4eng-infra/cnc-environment/process_parsed_files.py
+        dest: /home/almalinux/process_parsed_files.py
+        mode: '0755'
+
+    - name: Run processing script on storage VM
+      ansible.builtin.command:
+        cmd: python3 /home/almalinux/process_parsed_files.py

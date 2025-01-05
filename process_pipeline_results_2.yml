@@ -1,0 +1,78 @@
+---
+- name: Setup and process pipeline results
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure parsed directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: almalinux
+        group: almalinux
+        mode: '0777'
+      loop:
+        - /mnt/storage/pipeline_results/ecoli_parsed
+        - /mnt/storage/pipeline_results/human_parsed
+
+    - name: Ensure proper permissions for parsed directories recursively
+      ansible.builtin.command:
+        cmd: chmod -R 0777 {{ item }}
+      loop:
+        - /mnt/storage/pipeline_results/ecoli_parsed
+        - /mnt/storage/pipeline_results/human_parsed
+
+- name: Run Redis queue population script on host VM
+  hosts: host
+  become: yes
+  tasks:
+    - name: Ensure Python3 is installed
+      ansible.builtin.yum:
+        name: python3
+        state: present
+
+    - name: Ensure Redis Python module is installed
+      ansible.builtin.pip:
+        name: redis
+
+    - name: Copy Redis queue population script to the host VM
+      ansible.builtin.copy:
+        src: /home/almalinux/ds4eng-infra/cnc-environment/populate_redis_queues.py
+        dest: /home/almalinux/populate_redis_queues.py
+        owner: almalinux
+        group: almalinux
+        mode: '0755'
+
+    - name: Run Redis queue population script
+      ansible.builtin.shell: |
+        python3 /home/almalinux/populate_redis_queues.py
+      args:
+        chdir: /home/almalinux
+
+- name: Run parser task runner on worker VMs
+  hosts: worker
+  become: yes
+  tasks:
+    - name: Ensure Python3 is installed
+      ansible.builtin.yum:
+        name: python3
+        state: present
+
+    - name: Ensure Redis Python module is installed
+      ansible.builtin.pip:
+        name: redis
+
+    - name: Copy parser task runner script to worker VMs
+      ansible.builtin.copy:
+        src: /home/almalinux/ds4eng-infra/cnc-environment/parser_task_runner.py
+        dest: /home/almalinux/parser_task_runner.py
+        owner: almalinux
+        group: almalinux
+        mode: '0755'
+
+    - name: Run parser task runner script
+      ansible.builtin.shell: |
+        export REDIS_HOST={{ hostvars[groups['host'][0]].inventory_hostname }}
+        python3 /home/almalinux/parser_task_runner.py
+      args:
+        chdir: /home/almalinux
+

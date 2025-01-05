@@ -1,0 +1,62 @@
+---
+- name: Install Merizo on worker VMs
+  hosts: worker
+  become: yes
+  tasks:
+    - name: Ensure required packages are installed
+      package:
+        name: 
+          - git
+          - python3
+          - python3-pip
+          - ansible
+        state: present
+
+    - name: Clone the Merizo repository
+      git:
+        repo: https://github.com/psipred/merizo_search.git
+        dest: /home/almalinux/merizo_search
+        force: yes
+        update: yes
+      become: no
+
+    - name: Configure config_vars.yml
+      copy:
+        dest: /home/almalinux/merizo_search/ansible_installer/config_vars.yml
+        content: |
+          ---
+          app_location: /home/almalinux/merizo_search/applications
+          data_location: /home/almalinux/merizo_search/data
+          python_version: 3.9
+      become: no
+
+    - name: Set permissions for Merizo directory
+      file:
+        path: /home/almalinux/merizo_search
+        owner: almalinux
+        group: almalinux
+        mode: '0755'
+        recurse: yes
+
+    - name: Install virtualenv via pip
+      pip:
+        name: virtualenv
+
+    - name: Run Merizo Ansible installer
+      command: ansible-playbook -i hosts install.yml --connection=local
+      args:
+        chdir: /home/almalinux/merizo_search/ansible_installer
+      become: no
+
+    - name: Verify Merizo installation
+      shell: |
+        source /home/almalinux/merizo_search/applications/merizosearch_env/bin/activate && python /home/almalinux/merizo_search/merizo_search/merizo.py --help
+      args:
+        executable: /bin/bash
+      register: merizo_check
+      changed_when: false
+
+    - name: Display Merizo verification output
+      debug:
+        var: merizo_check.stdout
+
