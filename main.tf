@@ -12,12 +12,23 @@ resource "random_id" "secret" {
   byte_length = 5
 }
 
+
+# Generate the first SSH key
+resource "tls_private_key" "ssh_key_1" {
+  algorithm = "ED25519"
+}
+
+resource "local_file" "ssh_key_1" {
+  filename = "ssh_key_1.pem"
+  content  = tls_private_key.ssh_key_1.private_key_openssh
+}
+
 resource "harvester_cloudinit_secret" "cloud-config" {
   name      = "cloud-config-${random_id.secret.hex}"
   namespace = var.namespace
 
   user_data = templatefile("cloud-init.tmpl.yml", {
-      public_key_openssh = data.harvester_ssh_key.mysshkey.public_key
+      public_key_openssh  = tls_private_key.ssh_key_1.public_key_openssh,
     })
 }
 
@@ -192,4 +203,6 @@ resource "harvester_virtualmachine" "storage" {
     condenser_ingress_cons_nginx_proxy-body-size = "100000m"
   }
 }
+
+
 

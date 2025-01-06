@@ -4,16 +4,13 @@ set -e
 
 echo "Step 1: Initialize and apply Terraform to create VMs"
 terraform init
-terraform apply -auto-approve
+sudo terraform apply -auto-approve
 
 echo "Step 2: Generate Ansible inventory dynamically"
 chmod +x generate_inventory.py
 ./generate_inventory.py --list > inventory.json
 
-sleep 20
-
-echo "Step 3: Add SSH keys to VMs"
-ansible-playbook -i generate_inventory.py add_keys.yml
+sleep 10
 
 echo "Step 4: Install necessary packages on all VMs"
 ansible-playbook -i generate_inventory.py install_packages.yml
@@ -23,8 +20,8 @@ sleep 5
 echo "Step 4: HTTPD setup"
 ansible-playbook -i generate_inventory.py http_firewall.yml
 
-
 sleep 5
+
 
 echo “Step 5: Configure and set up monitoring”
 ansible-playbook -i generate_inventory.py monitoring9.yml

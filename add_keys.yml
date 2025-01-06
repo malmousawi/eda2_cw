@@ -1,32 +1,35 @@
-- name: Manage SSH Keys for VMs
-  hosts: localhost
-  gather_facts: no
-  tasks:
-    - name: Remove old host keys from known_hosts
-      ansible.builtin.shell: ssh-keygen -R {{ item }}
-      with_items: "{{ groups['all'] }}"
-      delegate_to: localhost
-      ignore_errors: yes
-
-    - name: Add new host keys to known_hosts
-      ansible.builtin.shell: ssh-keyscan -H {{ item }} >> ~/.ssh/known_hosts
-      with_items: "{{ groups['all'] }}"
-      delegate_to: localhost
-      ignore_errors: yes
-
-- name: Configure SSH on remote VMs
+- name: Generate and Distribute SSH Key
   hosts: all
-  become: true
+  gather_facts: false
+  vars:
+    local_ssh_key_path: "~/.ssh/id_ed25519"
   tasks:
-    - name: Ensure .ssh directory exists
+    - name: Check if SSH key exists on control node
+      delegate_to: localhost
+      stat:
+        path: "{{ local_ssh_key_path }}.pub"
+      register: ssh_key_check
+
+    - name: Generate SSH key on control node if it does not exist
+      delegate_to: localhost
+      command: ssh-keygen -t ed25519 -f "{{ local_ssh_key_path }}" -N ""
+      when: not ssh_key_check.stat.exists
+
+    - name: Ensure .ssh directory exists on remote VMs
+      become: true
       ansible.builtin.file:
-        path: ~/.ssh
+        path: /home/{{ ansible_user }}/.ssh
         state: directory
         mode: '0700'
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
 
-    - name: Add public key to authorized_keys
+    - name: Copy public key to authorized_keys on remote VMs
+      become: true
       ansible.builtin.copy:
-        src: ~/.ssh/id_ed25519.pub
-        dest: ~/.ssh/authorized_keys
+        src: "{{ local_ssh_key_path }}.pub"
+        dest: /home/{{ ansible_user }}/.ssh/authorized_keys
         mode: '0600'
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
 

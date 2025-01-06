@@ -139,7 +139,7 @@
             state: started
             enabled: yes
 
-    - name: Add Grafana repository
+    - name: Add Grafana repository with GPG key verification
       yum_repository:
         name: grafana
         description: Grafana Repository
@@ -148,6 +148,14 @@
         repo_gpgcheck: yes
         gpgkey: "https://packages.grafana.com/gpg.key"
         enabled: yes
+
+    - name: Clear yum cache
+      command: yum clean all
+
+    - name: Update CA certificates
+      yum:
+        name: ca-certificates
+        state: latest
 
     - name: Install Grafana
       yum:

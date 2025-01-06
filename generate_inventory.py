@@ -5,10 +5,10 @@ import subprocess
 
 def run(command):
     """Run a shell command and return its output."""
-    result = subprocess.run(command, capture_output=True, encoding="UTF-8")
+    result = subprocess.run(command, capture_output=True, text=True)
     if result.returncode != 0:
         raise RuntimeError(f"Command failed: {command}\n{result.stderr}")
-    return result.stdout
+    return result.stdout.strip()
 
 def generate_inventory():
     """Generate Ansible inventory from Terraform outputs."""
@@ -18,18 +18,30 @@ def generate_inventory():
         worker_vm_ips = json.loads(run(["terraform", "output", "--json", "worker_vm_ips"]))
         storage_vm_ips = json.loads(run(["terraform", "output", "--json", "storage_vm_ips"]))
 
-        # Access "value" directly (as the data is a list)
+        # Extract the "value" key if outputs are not directly lists
         host_vm_ips = host_vm_ips if isinstance(host_vm_ips, list) else host_vm_ips.get("value", [])
         worker_vm_ips = worker_vm_ips if isinstance(worker_vm_ips, list) else worker_vm_ips.get("value", [])
         storage_vm_ips = storage_vm_ips if isinstance(storage_vm_ips, list) else storage_vm_ips.get("value", [])
+
     except Exception as e:
         print(f"Error generating inventory: {e}")
         return {}
 
+    # Define common SSH variables
+    ansible_user = "almalinux"
+    private_key_file = "/home/almalinux/ds4eng-infra/cnc-environment/ssh_key_1.pem"  # Replace with the actual path to your private key
+
     # Build inventory
     inventory = {
         "_meta": {
-            "hostvars": {ip: {"ansible_ssh_host": ip, "ansible_user": "almalinux"} for ip in host_vm_ips + worker_vm_ips + storage_vm_ips}
+            "hostvars": {
+                ip: {
+                    "ansible_ssh_host": ip,
+                    "ansible_user": ansible_user,
+                    "ansible_ssh_private_key_file": private_key_file,
+                }
+                for ip in host_vm_ips + worker_vm_ips + storage_vm_ips
+            }
         },
         "host": {"hosts": host_vm_ips},
         "worker": {"hosts": worker_vm_ips},
@@ -59,3 +71,4 @@ if __name__ == "__main__":
         print(json.dumps({}))
     else:
         parser.print_help()
+
