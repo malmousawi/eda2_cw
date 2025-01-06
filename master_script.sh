@@ -16,7 +16,10 @@ echo "Step 2: Generate Ansible inventory dynamically"
 chmod +x generate_inventory.py
 ./generate_inventory.py --list > inventory.json
 
-sleep 10
+sleep 5
+
+echo "Step 2.5: Update known hosts and share lecturer public key"
+ansible-playbook -i generate_inventory.py add_keys.yml
 
 echo "Step 3: Install necessary packages on all VMs"
 ansible-playbook -i generate_inventory.py install_packages.yml
