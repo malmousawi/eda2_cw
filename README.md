@@ -2,7 +2,7 @@
 
 Step 1: Clone this repo
 
-Step 2: 
+Step 2: Run the commands below on an almalinux terminal 
 
 chmod +x setup_environment.sh
 ./setup_environment.sh
