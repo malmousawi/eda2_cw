@@ -1,21 +1,88 @@
 ---
-- name: Manage SSH Known Hosts and Authorized Keys for All VMs
+- name: Manage firewalld and SSH configuration on all VMs
+  hosts: all
+  gather_facts: yes
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    # Ensure firewalld and dependencies are installed
+    - name: Install firewalld and dependencies
+      yum:
+        name:
+          - firewalld
+          - nftables
+        state: present
+
+    # Ensure firewalld service is running and enabled
+    - name: Ensure firewalld service is running
+      service:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    # Reload firewalld configuration
+    - name: Reload firewalld
+      command: firewall-cmd --reload
+      ignore_errors: yes
+
+    # Ensure SSH port is open in the firewall
+    - name: Ensure SSH port is open
+      firewalld:
+        port: 22/tcp
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    # Restart firewalld service to apply changes
+    - name: Restart firewalld service
+      service:
+        name: firewalld
+        state: restarted
+
+- name: Manage SSH Known Hosts and Authorized Keys
   hosts: all
   gather_facts: no
+  become: yes
   tasks:
+    # Ensure .ssh directory exists on control node
+    - name: Ensure .ssh directory exists on control node
+      ansible.builtin.file:
+        path: /home/almalinux/.ssh
+        state: directory
+        mode: '0700'
+        owner: almalinux
+        group: almalinux
+      delegate_to: localhost
+
+    # Ensure known_hosts file exists on control node
+    - name: Ensure known_hosts file exists
+      ansible.builtin.file:
+        path: /home/almalinux/.ssh/known_hosts
+        state: touch
+        mode: '0644'
+        owner: almalinux
+        group: almalinux
+      delegate_to: localhost
+
+    # Remove old SSH host keys on control node
     - name: Remove old SSH host keys on control node
-      shell: ssh-keygen -R {{ inventory_hostname }}
+      shell: |
+        if [ -f /home/almalinux/.ssh/known_hosts ]; then
+          ssh-keygen -R {{ inventory_hostname }} -f /home/almalinux/.ssh/known_hosts;
+        fi
       delegate_to: localhost
       ignore_errors: yes
-      register: remove_host_key_result
 
+    # Add new SSH host keys on control node
     - name: Add new SSH host keys on control node
-      shell: ssh-keyscan -H {{ inventory_hostname }} >> ~/.ssh/known_hosts
+      shell: ssh-keyscan -H {{ inventory_hostname }} >> /home/almalinux/.ssh/known_hosts
       args:
         executable: /bin/bash
       delegate_to: localhost
-      when: remove_host_key_result is not failed
+      ignore_errors: yes
 
+    # Ensure .ssh directory exists on VMs
     - name: Ensure .ssh directory exists on VMs
       ansible.builtin.file:
         path: /home/almalinux/.ssh
@@ -24,6 +91,7 @@
         owner: almalinux
         group: almalinux
 
+    # Append public key to authorized_keys on VMs
     - name: Append public key to authorized_keys on VMs
       ansible.builtin.lineinfile:
         path: /home/almalinux/.ssh/authorized_keys
@@ -33,9 +101,26 @@
         group: almalinux
         mode: '0600'
 
-    - name: Restart SSH service on all VMs
+    # Validate SSH configuration
+    - name: Validate SSH configuration
+      shell: sshd -t
+      become: yes
+      ignore_errors: yes
+
+    # Reload SSH service on VMs
+    - name: Reload SSH service on VMs
       ansible.builtin.service:
         name: sshd
-        state: restarted
+        state: reloaded
+
+    # Wait for SSH service to restart
+    - name: Wait for SSH service to restart
+      wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 22
+        delay: 5
+        timeout: 30
+        state: started
+
 
 
