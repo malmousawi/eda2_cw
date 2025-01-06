@@ -16,10 +16,13 @@ Step 4:
 ./setup_environment.sh
 
 Step 5:
-tmux new -s "give a name (without speech marks)"
+cd /home/almalinux/ds4eng-infra/cnc-environment
 
 Step 6:
-chmod +x master_script.sh
+tmux new -s "give a name (without speech marks)"
 
 Step 7:
+sudo chmod +x master_script.sh
+
+Step 8:
 ./master_script.sh
