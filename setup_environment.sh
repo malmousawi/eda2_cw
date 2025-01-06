@@ -1,13 +1,8 @@
 #!/bin/bash
 
-# Install git (auto-approve)
-echo "Installing git..."
-sudo dnf install -y git
-
 # Clone the repositories
 echo "Cloning repositories..."
 git clone https://github.com/owainkenwayucl/ds4eng-infra.git
-git clone https://github.com/malmousawi/eda1_cw.git
 
 # Copy files from eda1_cw to ds4eng-infra
 echo "Copying files..."
