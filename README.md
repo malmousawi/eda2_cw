@@ -1,5 +1,7 @@
 # eda1_cw
 
+Step 0:
+sudo dnf install git
 
 Step 1: 
 git clone https://github.com/malmousawi/eda1_cw.git
