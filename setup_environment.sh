@@ -12,6 +12,9 @@ sudo cp -r /home/almalinux/eda1_cw/* /home/almalinux/ds4eng-infra/cnc-environmen
 echo "Installing yum-utils..."
 sudo yum install -y yum-utils
 
+echo "Installing tmux"
+sudo dnf install -y tmux
+
 # Add HashiCorp repo and install Terraform (auto-approve)
 echo "Adding HashiCorp repo and installing Terraform..."
 sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
