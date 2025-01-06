@@ -8,7 +8,7 @@ sudo terraform apply -auto-approve
 
 sleep 3
 
-chmod 600 /home/almalinux/ds4eng-infra/cnc-environment/ssh_key_1.pem
+sudo chmod 600 /home/almalinux/ds4eng-infra/cnc-environment/ssh_key_1.pem
 
 sleep 3
 
