@@ -22,6 +22,7 @@ cd /home/almalinux/ds4eng-infra/cnc-environment
 
 Step 6:
 tmux new -s test
+
 tmux attach -t test (# run this if you deactivate from the session)
 
 Step 7:
