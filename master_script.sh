@@ -12,7 +12,7 @@ chmod +x generate_inventory.py
 
 sleep 10
 
-echo "Step 4: Install necessary packages on all VMs"
+echo "Step 3: Install necessary packages on all VMs"
 ansible-playbook -i generate_inventory.py install_packages.yml
 
 sleep 5
@@ -59,5 +59,8 @@ sleep 10
 
 echo "Step 12: Running summary script/playbook"
 ansible-playbook -i generate_inventory.py cath_summary.yml
+
+echo "Step 13: Setup MinIO"
+ansible-playbook -i generate_inventory.py minio2.yml
 
 echo "Deployment and pipeline processing completed successfully!"
