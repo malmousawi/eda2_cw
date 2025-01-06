@@ -4,6 +4,13 @@
 echo "Cloning repositories..."
 git clone https://github.com/owainkenwayucl/ds4eng-infra.git /home/almalinux/ds4eng-infra
 
+
+echo "Changing ownership of the ds4eng-infra/cnc-environment directory..."
+sudo chown -R almalinux:almalinux /home/almalinux/ds4eng-infra/cnc-environment
+
+echo "Changing ownership of the eda1_cw directory..."
+sudo chown -R almalinux:almalinux /home/almalinux/eda1_cw
+
 # Copy files from eda1_cw to ds4eng-infra
 echo "Copying files..."
 sudo cp -r /home/almalinux/eda1_cw/* /home/almalinux/ds4eng-infra/cnc-environment
@@ -24,10 +31,6 @@ sudo yum -y install terraform
 echo "Installing EPEL repository and Ansible..."
 sudo yum install -y epel-release
 sudo yum install -y ansible
-
-# Change ownership of the ds4eng-infra/cnc-environment directory
-echo "Changing ownership of the ds4eng-infra/cnc-environment directory..."
-sudo chown -R almalinux:almalinux /home/almalinux/ds4eng-infra/cnc-environment
 
 # Move into the cnc-environment directory
 echo "Navigating to the cnc-environment directory..."
