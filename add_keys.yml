@@ -24,11 +24,18 @@
         owner: almalinux
         group: almalinux
 
-    - name: Copy public key to authorized_keys on VMs
-      ansible.builtin.copy:
-        src: /home/almalinux/ds4eng-infra/cnc-environment/lecturer_key.pub
-        dest: /home/almalinux/.ssh/authorized_keys
+    - name: Append public key to authorized_keys on VMs
+      ansible.builtin.lineinfile:
+        path: /home/almalinux/.ssh/authorized_keys
+        line: "{{ lookup('file', '/home/almalinux/ds4eng-infra/cnc-environment/lecturer_key.pub') }}"
+        create: yes
         owner: almalinux
         group: almalinux
         mode: '0600'
+
+    - name: Restart SSH service on all VMs
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+
 
