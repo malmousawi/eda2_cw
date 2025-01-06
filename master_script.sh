@@ -6,6 +6,12 @@ echo "Step 1: Initialize and apply Terraform to create VMs"
 terraform init
 sudo terraform apply -auto-approve
 
+sleep 3
+
+chmod 600 /home/almalinux/ds4eng-infra/cnc-environment/ssh_key_1.pem
+
+sleep 3
+
 echo "Step 2: Generate Ansible inventory dynamically"
 chmod +x generate_inventory.py
 ./generate_inventory.py --list > inventory.json

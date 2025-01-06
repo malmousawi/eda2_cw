@@ -2,7 +2,7 @@
 
 # Clone the repositories
 echo "Cloning repositories..."
-git clone https://github.com/owainkenwayucl/ds4eng-infra.git
+git clone https://github.com/owainkenwayucl/ds4eng-infra.git /home/almalinux/ds4eng-infra
 
 # Copy files from eda1_cw to ds4eng-infra
 echo "Copying files..."

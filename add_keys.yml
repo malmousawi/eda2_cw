@@ -1,35 +1,34 @@
-- name: Generate and Distribute SSH Key
+---
+- name: Manage SSH Known Hosts and Authorized Keys for All VMs
   hosts: all
-  gather_facts: false
-  vars:
-    local_ssh_key_path: "~/.ssh/id_ed25519"
+  gather_facts: no
   tasks:
-    - name: Check if SSH key exists on control node
+    - name: Remove old SSH host keys on control node
+      shell: ssh-keygen -R {{ inventory_hostname }}
       delegate_to: localhost
-      stat:
-        path: "{{ local_ssh_key_path }}.pub"
-      register: ssh_key_check
+      ignore_errors: yes
+      register: remove_host_key_result
 
-    - name: Generate SSH key on control node if it does not exist
+    - name: Add new SSH host keys on control node
+      shell: ssh-keyscan -H {{ inventory_hostname }} >> ~/.ssh/known_hosts
+      args:
+        executable: /bin/bash
       delegate_to: localhost
-      command: ssh-keygen -t ed25519 -f "{{ local_ssh_key_path }}" -N ""
-      when: not ssh_key_check.stat.exists
+      when: remove_host_key_result is not failed
 
-    - name: Ensure .ssh directory exists on remote VMs
-      become: true
+    - name: Ensure .ssh directory exists on VMs
       ansible.builtin.file:
-        path: /home/{{ ansible_user }}/.ssh
+        path: /home/almalinux/.ssh
         state: directory
         mode: '0700'
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: almalinux
+        group: almalinux
 
-    - name: Copy public key to authorized_keys on remote VMs
-      become: true
+    - name: Copy public key to authorized_keys on VMs
       ansible.builtin.copy:
-        src: "{{ local_ssh_key_path }}.pub"
-        dest: /home/{{ ansible_user }}/.ssh/authorized_keys
+        src: /home/almalinux/ds4eng-infra/cnc-environment/lecturer_key.pub
+        dest: /home/almalinux/.ssh/authorized_keys
+        owner: almalinux
+        group: almalinux
         mode: '0600'
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
 
