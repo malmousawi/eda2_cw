@@ -1,5 +1,7 @@
 # eda1_cw
 
+# These are the steps to run the coursework on a brand new fresh machine
+
 Step 0:
 sudo dnf install git
 
@@ -19,7 +21,8 @@ Step 5:
 cd /home/almalinux/ds4eng-infra/cnc-environment
 
 Step 6:
-tmux new -s "give a name (without speech marks)"
+tmux new -s test
+tmux attach -t test (# run this if you deactivate from the session)
 
 Step 7:
 sudo chmod +x master_script.sh
