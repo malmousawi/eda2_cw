@@ -1,9 +1,9 @@
 ---
-- name: Upload CSV files to Minio
+- name: Upload files to Minio
   hosts: storage
   become: true
   vars:
-    bucket_name: research-results  # Define the bucket name here
+    bucket_name: research-results 
 
   tasks:
     - name: Read Minio admin password
