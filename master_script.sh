@@ -76,6 +76,11 @@ ansible-playbook -i generate_inventory.py full.yaml
 
 sleep 5
 
+echo "Step1 14: Opening ports for minio"
+ansible-playbook -i generate_inventory.py open_minio_ports.yml
+
+sleep 5
+
 echo "Step 14: Setup MinIO"
 ansible-playbook -i generate_inventory.py minio2.yml
 
