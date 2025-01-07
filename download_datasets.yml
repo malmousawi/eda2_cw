@@ -32,7 +32,7 @@
         - { directory: "alphafold_ecoli" }
         - { directory: "cath_foldclassdb" }
 
-    # Download datasets
+    # Download datasets with retries
     - name: Download datasets
       ansible.builtin.get_url:
         url: "{{ item.url }}"
@@ -42,7 +42,10 @@
         - { filename: "UP000005640_9606_HUMAN_v4.tar", url: "https://ftp.ebi.ac.uk/pub/databases/alphafold/latest/UP000005640_9606_HUMAN_v4.tar" }
         - { filename: "UP000000625_83333_ECOLI_v4.tar", url: "https://ftp.ebi.ac.uk/pub/databases/alphafold/latest/UP000000625_83333_ECOLI_v4.tar" }
         - { filename: "cath_foldclassdb.tar.gz", url: "http://bioinfadmin.cs.ucl.ac.uk/downloads/merizo_search/cath_foldclassdb.tar.gz" }
-    
+      retries: 3
+      delay: 5
+      register: download_results
+      until: download_results is succeeded
 
     # Extract datasets
     - name: Extract Human AlphaFoldDB models
