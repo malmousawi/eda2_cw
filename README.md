@@ -23,7 +23,7 @@ cd /home/almalinux/ds4eng-infra/cnc-environment
 Step 6:
 tmux new -s test
 
-tmux attach -t test (# run this if you deactivate from the session)
+tmux attach -t test (# run this if you deactivate from the tmux session)
 
 Step 7:
 sudo chmod +x master_script.sh
