@@ -64,12 +64,29 @@ echo “Step 11: Process Results”
 
 ansible-playbook -i generate_inventory.py process_pipeline_results_2.yml
 
-sleep 10
+sleep 5
 
 echo "Step 12: Running summary script/playbook"
 ansible-playbook -i generate_inventory.py cath_summary.yml
 
-echo "Step 13: Setup MinIO"
+sleep 5
+
+echo "Step 13: Running full.yaml"
+ansible-playbook -i generate_inventory.py full.yml
+
+sleep 5
+
+echo "Step 14: Setup MinIO"
 ansible-playbook -i generate_inventory.py minio2.yml
+
+sleep 5
+
+echo "Step 15: Uploading data to MinIO"
+ansible-playbook -i generate_inventory.py upload_minio.yml
+
+sleep 5
+
+echo "Step 16: Creating MinIO user"
+ansible-playbook -i generate_inventory.py create_minio_user.yml
 
 echo "Deployment and pipeline processing completed successfully!"
