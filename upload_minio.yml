@@ -1,0 +1,75 @@
+---
+- name: Upload CSV files to Minio
+  hosts: storage
+  become: true
+  vars:
+    bucket_name: research-results  # Define the bucket name here
+
+  tasks:
+    - name: Read Minio admin password
+      ansible.builtin.slurp:
+        src: /home/almalinux/miniopass
+      register: minio_password_encoded
+
+    - name: Decode the Minio password and strip newline
+      ansible.builtin.set_fact:
+        minio_password: "{{ (minio_password_encoded.content | b64decode).strip() }}"
+
+    - name: Get the primary IP address
+      ansible.builtin.set_fact:
+        minio_ip: "{{ ansible_default_ipv4.address }}"
+
+    - name: Debug Minio details
+      ansible.builtin.debug:
+        msg: "Connecting to Minio server at https://{{ minio_ip }}:9000 with bucket {{ bucket_name }}"
+
+    - name: Configure Minio client alias
+      ansible.builtin.shell: >
+        mc alias set myminio https://{{ minio_ip }}:9000
+        myminioadmin "{{ minio_password }}" --insecure
+      args:
+        executable: /bin/bash
+      environment:
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+
+    - name: Create bucket if it does not exist
+      ansible.builtin.shell: >
+        mc ls myminio/{{ bucket_name }} --insecure || mc mb myminio/{{ bucket_name }} --insecure
+      args:
+        executable: /bin/bash
+      environment:
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+
+    - name: Verify bucket existence
+      ansible.builtin.shell: >
+        mc ls myminio/{{ bucket_name }} --insecure
+      args:
+        executable: /bin/bash
+      register: bucket_status
+      environment:
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+
+    - name: Debug bucket status
+      ansible.builtin.debug:
+        msg: "Bucket {{ bucket_name }} status: {{ bucket_status.stdout }}"
+
+    - name: Upload CSV files to Minio bucket
+      ansible.builtin.shell: >
+        mc cp -r /mnt/storage/pipeline_results/* myminio/{{ bucket_name }}/ --insecure
+      args:
+        executable: /bin/bash
+      environment:
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+
+    - name: Verify uploaded files
+      ansible.builtin.shell: >
+        mc ls myminio/{{ bucket_name }} --insecure
+      args:
+        executable: /bin/bash
+      register: upload_status
+      environment:
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+
+    - name: Debug uploaded files
+      ansible.builtin.debug:
+        msg: "Uploaded files: {{ upload_status.stdout }}"
