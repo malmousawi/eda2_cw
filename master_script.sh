@@ -72,7 +72,7 @@ ansible-playbook -i generate_inventory.py cath_summary.yml
 sleep 5
 
 echo "Step 13: Running full.yaml"
-ansible-playbook -i generate_inventory.py full.yml
+ansible-playbook -i generate_inventory.py full.yaml
 
 sleep 5
 
