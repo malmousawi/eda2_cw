@@ -10,7 +10,7 @@ TARGET_DIRS = {
 }
 
 def collect_files(directory):
-    """Collect all .pdb and .cif files from a directory."""
+    """Collect all .pdb files from a directory."""
     if not os.path.exists(directory):
         print(f"Directory does not exist: {directory}")
         return []
