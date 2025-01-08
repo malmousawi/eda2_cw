@@ -43,6 +43,7 @@ def main():
 
         mean_plDDT = statistics.mean(plDDT_values) if plDDT_values else 0
 
+        # writing the results
         with open(output_file, "w", encoding="utf-8") as fhOut:
             fhOut.write(f"#{os.path.basename(input_file)} Results. mean plddt: {mean_plDDT}\n")
             fhOut.write("cath_id,count\n")
