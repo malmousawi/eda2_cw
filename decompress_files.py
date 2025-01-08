@@ -15,6 +15,8 @@ DECOMPRESSED_ECOLI_DIR = os.path.join(DECOMPRESSED_DIR, "decompressed_ecoli")
 os.makedirs(DECOMPRESSED_HUMAN_DIR, exist_ok=True)
 os.makedirs(DECOMPRESSED_ECOLI_DIR, exist_ok=True)
 
+
+# Decompress function for a file
 def decompress_gz_file(input_path, output_path):
     """Decompress a single .gz file."""
     with gzip.open(input_path, 'rb') as f_in:
