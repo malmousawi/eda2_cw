@@ -48,7 +48,7 @@ ansible-playbook -i generate_inventory.py install_merizo.yml
 sleep 5
 
 echo "Step 8: Download and extract datasets to shared storage"
-ansible-playbook -i generate_inventory.py download_datasets.yml
+ansible-playbook -i generate_inventory.py download_datasets_temp.yml
 
 sleep 5
 
