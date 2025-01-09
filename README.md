@@ -30,7 +30,7 @@ sudo chmod +x master_script.sh
 
 Step 8:
 ./master_script.sh
-
+(when prompted to enter a username, dont enter 'ucabm68' as I have another machine with the same user name. I recommend 'ucab68')
 
 # If you want to ssh into one of the machines:
 
