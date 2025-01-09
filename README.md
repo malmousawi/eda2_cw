@@ -43,6 +43,21 @@ Step 2:
 ssh -i ssh_key_1.pem almalinux@10.134.12.xxx
 
 
+# Current Machines:
+
+local: 10.134.12.10
+
+ucab68-host-3fef47a8a7: 10.134.12.47
+
+ucab68-worker-01-3fef47a8a7: 10.134.12.122
+
+ucab68-worker-02-3fef47a8a7: 10.134.12.29
+
+ucab68-worker-03-3fef47a8a7: 10.134.12.74
+
+ucab68-storage-3fef47a8a7: 10.134.12.104
+
+
 # If you want to run the system from the already existing machine
 
 Step 1:
