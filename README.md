@@ -45,6 +45,8 @@ ssh -i ssh_key_1.pem almalinux@10.134.12.xxx
 
 # Current Machines:
 
+username: IP Address
+
 local: 10.134.12.10
 
 ucab68-host-3fef47a8a7: 10.134.12.47
