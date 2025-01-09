@@ -30,3 +30,14 @@ sudo chmod +x master_script.sh
 
 Step 8:
 ./master_script.sh
+
+
+# If you want to ssh into one of the machines:
+
+Step 1:
+
+cd /home/almalinux/ds4eng-infra/cnc-environment
+
+Step 2:
+
+ssh -i ssh_key_1.pem almalinux@10.134.12.xxx
