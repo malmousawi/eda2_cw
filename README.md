@@ -41,3 +41,24 @@ cd /home/almalinux/ds4eng-infra/cnc-environment
 Step 2:
 
 ssh -i ssh_key_1.pem almalinux@10.134.12.xxx
+
+
+# If you want to run the system from the already existing machine
+
+Step 1:
+
+tmux new -s test2
+
+Step 2:
+
+cd /home/almalinux/ds4eng-infra/cnc-environment
+
+Step 3:
+
+sudo chmod +x master_script_2.sh
+
+Step 4:
+
+./master_script_2.sh
+
+
