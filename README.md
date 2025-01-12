@@ -43,6 +43,15 @@ Step 2:
 
 ssh -i ssh_key_1.pem almalinux@10.134.12.xxx
 
+# If you want to destroy the machines:
+
+Step 1:
+
+cd /home/almalinux/ds4eng-infra/cnc-environment
+
+Step 2:
+
+sudo terraform destroy
 
 # Current Machines:
 
