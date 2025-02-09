@@ -1,3 +1,3 @@
 provider "harvester" {
-  kubeconfig = "/home/almalinux/eda1_cw/kube/config"
+  kubeconfig = "/home/almalinux/eda2_cw/kube/config"
 }

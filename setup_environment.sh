@@ -1,18 +1,6 @@
 #!/bin/bash
 
-# Clone the repositories
-echo "Cloning repositories..."
-git clone https://github.com/owainkenwayucl/ds4eng-infra.git /home/almalinux/ds4eng-infra
-
-echo "Changing ownership of the eda1_cw directory..."
-sudo chown -R almalinux:almalinux /home/almalinux/eda1_cw
-
-# Copy files from eda1_cw to ds4eng-infra
-echo "Copying files..."
-sudo cp -r /home/almalinux/eda1_cw/* /home/almalinux/ds4eng-infra/cnc-environment
-
-echo "Changing ownership of the ds4eng-infra/cnc-environment directory..."
-sudo chown -R almalinux:almalinux /home/almalinux/ds4eng-infra/cnc-environment
+sudo chown -R almalinux:almalinux /home/almalinux/eda2_cw
 
 # Install yum-utils (auto-approve)
 echo "Installing yum-utils..."

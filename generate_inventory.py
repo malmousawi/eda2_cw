@@ -14,14 +14,10 @@ def generate_inventory():
     """Generate Ansible inventory from Terraform outputs."""
     try:
         # Fetch IPs from Terraform outputs
-        host_vm_ips = json.loads(run(["terraform", "output", "--json", "host_vm_ips"]))
         worker_vm_ips = json.loads(run(["terraform", "output", "--json", "worker_vm_ips"]))
-        storage_vm_ips = json.loads(run(["terraform", "output", "--json", "storage_vm_ips"]))
 
         # Extract the "value" key if outputs are not directly lists
-        host_vm_ips = host_vm_ips if isinstance(host_vm_ips, list) else host_vm_ips.get("value", [])
         worker_vm_ips = worker_vm_ips if isinstance(worker_vm_ips, list) else worker_vm_ips.get("value", [])
-        storage_vm_ips = storage_vm_ips if isinstance(storage_vm_ips, list) else storage_vm_ips.get("value", [])
 
     except Exception as e:
         print(f"Error generating inventory: {e}")
@@ -29,7 +25,7 @@ def generate_inventory():
 
     # Define common SSH variables
     ansible_user = "almalinux"
-    private_key_file = "/home/almalinux/ds4eng-infra/cnc-environment/ssh_key_1.pem"  # Replace with the actual path to your private key
+    private_key_file = "/home/almalinux/eda2_cw/ssh_key_1.pem"  # Replace with the actual path to your private key
 
     # Build inventory
     inventory = {
@@ -40,12 +36,10 @@ def generate_inventory():
                     "ansible_user": ansible_user,
                     "ansible_ssh_private_key_file": private_key_file,
                 }
-                for ip in host_vm_ips + worker_vm_ips + storage_vm_ips
+                for ip in worker_vm_ips
             }
         },
-        "host": {"hosts": host_vm_ips},
         "worker": {"hosts": worker_vm_ips},
-        "storage": {"hosts": storage_vm_ips},
     }
 
     return inventory

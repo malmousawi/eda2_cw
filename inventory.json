@@ -1,48 +1,34 @@
 {
     "_meta": {
         "hostvars": {
-            "10.134.12.95": {
-                "ansible_ssh_host": "10.134.12.95",
+            "10.134.12.83": {
+                "ansible_ssh_host": "10.134.12.83",
                 "ansible_user": "almalinux",
-                "ansible_ssh_private_key_file": "/home/almalinux/ds4eng-infra/cnc-environment/ssh_key_1.pem"
+                "ansible_ssh_private_key_file": "/home/almalinux/eda2_cw/ssh_key_1.pem"
             },
-            "10.134.12.89": {
-                "ansible_ssh_host": "10.134.12.89",
+            "10.134.12.157": {
+                "ansible_ssh_host": "10.134.12.157",
                 "ansible_user": "almalinux",
-                "ansible_ssh_private_key_file": "/home/almalinux/ds4eng-infra/cnc-environment/ssh_key_1.pem"
+                "ansible_ssh_private_key_file": "/home/almalinux/eda2_cw/ssh_key_1.pem"
             },
-            "10.134.12.85": {
-                "ansible_ssh_host": "10.134.12.85",
+            "10.134.12.122": {
+                "ansible_ssh_host": "10.134.12.122",
                 "ansible_user": "almalinux",
-                "ansible_ssh_private_key_file": "/home/almalinux/ds4eng-infra/cnc-environment/ssh_key_1.pem"
+                "ansible_ssh_private_key_file": "/home/almalinux/eda2_cw/ssh_key_1.pem"
             },
-            "10.134.12.90": {
-                "ansible_ssh_host": "10.134.12.90",
+            "10.134.12.160": {
+                "ansible_ssh_host": "10.134.12.160",
                 "ansible_user": "almalinux",
-                "ansible_ssh_private_key_file": "/home/almalinux/ds4eng-infra/cnc-environment/ssh_key_1.pem"
-            },
-            "10.134.12.64": {
-                "ansible_ssh_host": "10.134.12.64",
-                "ansible_user": "almalinux",
-                "ansible_ssh_private_key_file": "/home/almalinux/ds4eng-infra/cnc-environment/ssh_key_1.pem"
+                "ansible_ssh_private_key_file": "/home/almalinux/eda2_cw/ssh_key_1.pem"
             }
         }
     },
-    "host": {
-        "hosts": [
-            "10.134.12.95"
-        ]
-    },
     "worker": {
         "hosts": [
-            "10.134.12.89",
-            "10.134.12.85",
-            "10.134.12.90"
-        ]
-    },
-    "storage": {
-        "hosts": [
-            "10.134.12.64"
+            "10.134.12.83",
+            "10.134.12.157",
+            "10.134.12.122",
+            "10.134.12.160"
         ]
     }
 }
