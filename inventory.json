@@ -1,23 +1,23 @@
 {
     "_meta": {
         "hostvars": {
-            "10.134.12.83": {
-                "ansible_ssh_host": "10.134.12.83",
+            "10.134.12.188": {
+                "ansible_ssh_host": "10.134.12.188",
                 "ansible_user": "almalinux",
                 "ansible_ssh_private_key_file": "/home/almalinux/eda2_cw/ssh_key_1.pem"
             },
-            "10.134.12.157": {
-                "ansible_ssh_host": "10.134.12.157",
+            "10.134.12.176": {
+                "ansible_ssh_host": "10.134.12.176",
                 "ansible_user": "almalinux",
                 "ansible_ssh_private_key_file": "/home/almalinux/eda2_cw/ssh_key_1.pem"
             },
-            "10.134.12.122": {
-                "ansible_ssh_host": "10.134.12.122",
+            "10.134.12.100": {
+                "ansible_ssh_host": "10.134.12.100",
                 "ansible_user": "almalinux",
                 "ansible_ssh_private_key_file": "/home/almalinux/eda2_cw/ssh_key_1.pem"
             },
-            "10.134.12.160": {
-                "ansible_ssh_host": "10.134.12.160",
+            "10.134.12.123": {
+                "ansible_ssh_host": "10.134.12.123",
                 "ansible_user": "almalinux",
                 "ansible_ssh_private_key_file": "/home/almalinux/eda2_cw/ssh_key_1.pem"
             }
@@ -25,10 +25,10 @@
     },
     "worker": {
         "hosts": [
-            "10.134.12.83",
-            "10.134.12.157",
-            "10.134.12.122",
-            "10.134.12.160"
+            "10.134.12.188",
+            "10.134.12.176",
+            "10.134.12.100",
+            "10.134.12.123"
         ]
     }
 }

@@ -19,8 +19,4 @@ echo "Installing EPEL repository and Ansible..."
 sudo yum install -y epel-release
 sudo yum install -y ansible
 
-# Move into the cnc-environment directory
-echo "Navigating to the cnc-environment directory..."
-cd /home/almalinux/ds4eng-infra/cnc-environment
-
 echo "Setup complete!"
